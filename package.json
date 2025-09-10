@@ -1,0 +1,16 @@
+{
+  "name": "x402-cryptopriceconverter",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "@coinbase/x402": "^0.6.2",
+    "axios": "^1.11.0",
+    "express": "^5.1.0",
+    "x402-express": "^0.6.0"
+  }
+}
