@@ -1,18 +1,24 @@
 import express from "express";
 import axios from "axios";
 import { paymentMiddleware } from "x402-express";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 const app = express();
 
-// 🔑 Replace with your own wallet address where USDC should be sent
-const payToAddress = "0xYourWalletAddressHere";
+const payToAddress = process.env.PAY_TO_ADDRESS;
+
+if (!payToAddress) {
+  throw new Error("PAY_TO_ADDRESS not set in .env file");
+}
 
 app.use(
   paymentMiddleware(
     payToAddress,
     {
       "/api/crypto": {
-        price: "$0.002",
+        price: "$0.001",
         network: "base",
         config: {
           description: "Get real-time crypto prices (BTC, ETH, etc.)",
@@ -84,7 +90,7 @@ app.get("/api/stock", async (req, res) => {
 });
 
 app.get("/", (req, res) => {
-  res.send("x402 Price API is running ✅");
+  res.send("x402 Price API is running");
 });
 
 app.listen(3000, () => {
