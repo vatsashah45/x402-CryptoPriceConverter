@@ -14,43 +14,56 @@ if (!payToAddress) {
 }
 
 app.use(
-  paymentMiddleware(
-    payToAddress,
-    {
-      "/api/crypto": {
-        price: "$0.001",
-        network: "base",
-        config: {
-          description: "Get real-time crypto prices (BTC, ETH, etc.)",
-          outputSchema: {
-            type: "object",
-            properties: {
-              symbol: { type: "string" },
-              currency: { type: "string" },
-              price: { type: "number" },
-              timestamp: { type: "string" },
-            },
+  paymentMiddleware(payToAddress, {
+    "/api/crypto": {
+      price: "$0.001",
+      network: "base",
+      config: {
+        description: "Get real-time crypto prices (BTC, ETH, etc.)",
+        outputSchema: {
+          type: "object",
+          properties: {
+            symbol: { type: "string" },
+            currency: { type: "string" },
+            price: { type: "number" },
+            timestamp: { type: "string" },
           },
         },
       },
-      "/api/stock": {
-        price: "$0.005",
-        network: "base",
-        config: {
-          description: "Get real-time US stock prices (AAPL, TSLA, etc.)",
-          outputSchema: {
-            type: "object",
-            properties: {
-              symbol: { type: "string" },
-              price: { type: "number" },
-              currency: { type: "string" },
-              timestamp: { type: "string" },
-            },
+    },
+    "/api/stock": {
+      price: "$0.005",
+      network: "base",
+      config: {
+        description: "Get real-time US stock prices (AAPL, TSLA, etc.)",
+        outputSchema: {
+          type: "object",
+          properties: {
+            symbol: { type: "string" },
+            price: { type: "number" },
+            currency: { type: "string" },
+            timestamp: { type: "string" },
           },
         },
       },
-    }
-  )
+    },
+    "/api/sentiment": {
+      price: "$0.003",
+      network: "base",
+      config: {
+        description: "Get the daily Bitcoin Fear & Greed Index (sentiment score)",
+        outputSchema: {
+          type: "object",
+          properties: {
+            symbol: { type: "string" },
+            score: { type: "number" },
+            classification: { type: "string" },
+            timestamp: { type: "string" },
+          },
+        },
+      },
+    },
+  })
 );
 
 app.get("/api/crypto", async (req, res) => {
@@ -86,6 +99,34 @@ app.get("/api/stock", async (req, res) => {
     });
   } catch {
     res.status(500).json({ error: "Error fetching stock price" });
+  }
+});
+
+app.get("/api/sentiment", async (req, res) => {
+  try {
+    const { symbol = "BTC" } = req.query;
+
+    if (symbol.toUpperCase() !== "BTC") {
+      return res.status(400).json({
+        error: "Sentiment data is only available for BTC at the moment.",
+      });
+    }
+
+    const resp = await axios.get("https://api.alternative.me/fng/");
+    const data = resp.data?.data?.[0];
+
+    if (!data) {
+      return res.status(500).json({ error: "No sentiment data available" });
+    }
+
+    res.json({
+      symbol: "BTC",
+      score: Number(data.value),
+      classification: data.value_classification,
+      timestamp: new Date(Number(data.timestamp) * 1000).toISOString(),
+    });
+  } catch {
+    res.status(500).json({ error: "Error fetching sentiment data" });
   }
 });
 
