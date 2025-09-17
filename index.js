@@ -19,6 +19,7 @@ app.use(
       price: "$0.001",
       network: "base",
       config: {
+        discoverable: true,
         description: "Get real-time crypto prices (BTC, ETH, etc.)",
         outputSchema: {
           type: "object",
@@ -35,6 +36,7 @@ app.use(
       price: "$0.005",
       network: "base",
       config: {
+        discoverable: true,
         description: "Get real-time US stock prices (AAPL, TSLA, etc.)",
         outputSchema: {
           type: "object",
@@ -51,6 +53,7 @@ app.use(
       price: "$0.003",
       network: "base",
       config: {
+        discoverable: true,
         description: "Get the daily Bitcoin Fear & Greed Index (sentiment score)",
         outputSchema: {
           type: "object",
