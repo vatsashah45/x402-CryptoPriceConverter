@@ -13,61 +13,93 @@ if (!payToAddress) {
   throw new Error("PAY_TO_ADDRESS not set in .env file");
 }
 
-app.use(
-  paymentMiddleware(payToAddress, {
-    "/api/crypto": {
-      price: "$0.001",
-      network: "base",
-      config: {
-        discoverable: true,
-        description: "Get real-time crypto prices (BTC, ETH, etc.)",
-        outputSchema: {
-          type: "object",
-          properties: {
-            symbol: { type: "string" },
-            currency: { type: "string" },
-            price: { type: "number" },
-            timestamp: { type: "string" },
+const routesConfig = {
+  "/api/crypto": {
+    price: "$0.001",
+    network: "base",
+    config: {
+      discoverable: true,
+      description: "Get real-time crypto prices (BTC, ETH, etc.)",
+      inputSchema: {
+        queryParams: {
+          symbol: {
+            type: "string",
+            description: "Crypto symbol (e.g. BTC, ETH, SOL)",
+            required: true,
+          },
+          currency: {
+            type: "string",
+            description: "Fiat currency (default: USD)",
+            required: false,
           },
         },
       },
-    },
-    "/api/stock": {
-      price: "$0.005",
-      network: "base",
-      config: {
-        discoverable: true,
-        description: "Get real-time US stock prices (AAPL, TSLA, etc.)",
-        outputSchema: {
-          type: "object",
-          properties: {
-            symbol: { type: "string" },
-            price: { type: "number" },
-            currency: { type: "string" },
-            timestamp: { type: "string" },
-          },
+      outputSchema: {
+        type: "object",
+        properties: {
+          symbol: { type: "string" },
+          currency: { type: "string" },
+          price: { type: "number" },
+          timestamp: { type: "string" },
         },
       },
     },
-    "/api/sentiment": {
-      price: "$0.003",
-      network: "base",
-      config: {
-        discoverable: true,
-        description: "Get the daily Bitcoin Fear & Greed Index (sentiment score)",
-        outputSchema: {
-          type: "object",
-          properties: {
-            symbol: { type: "string" },
-            score: { type: "number" },
-            classification: { type: "string" },
-            timestamp: { type: "string" },
+  },
+  "/api/stock": {
+    price: "$0.005",
+    network: "base",
+    config: {
+      discoverable: true,
+      description: "Get real-time US stock prices (AAPL, TSLA, etc.)",
+      inputSchema: {
+        queryParams: {
+          symbol: {
+            type: "string",
+            description: "Stock ticker symbol (e.g. AAPL, TSLA)",
+            required: true,
           },
         },
       },
+      outputSchema: {
+        type: "object",
+        properties: {
+          symbol: { type: "string" },
+          price: { type: "number" },
+          currency: { type: "string" },
+          timestamp: { type: "string" },
+        },
+      },
     },
-  })
-);
+  },
+  "/api/sentiment": {
+    price: "$0.003",
+    network: "base",
+    config: {
+      discoverable: true,
+      description: "Get the daily Bitcoin Fear & Greed Index (sentiment score)",
+      inputSchema: {
+        queryParams: {
+          symbol: {
+            type: "string",
+            description: "Crypto symbol (only BTC supported currently)",
+            required: false,
+          },
+        },
+      },
+      outputSchema: {
+        type: "object",
+        properties: {
+          symbol: { type: "string" },
+          score: { type: "number" },
+          classification: { type: "string" },
+          timestamp: { type: "string" },
+        },
+      },
+    },
+  },
+};
+
+app.use(paymentMiddleware(payToAddress, routesConfig));
 
 app.get("/api/crypto", async (req, res) => {
   try {
@@ -134,6 +166,21 @@ app.get("/api/sentiment", async (req, res) => {
 });
 
 app.get("/", (req, res) => {
+  if (req.headers.accept === "application/x402+json") {
+    return res.json({
+      x402Version: 1,
+      resources: Object.entries(routesConfig).map(([path, config]) => ({
+        path,
+        description: config.config.description,
+        price: config.price,
+        network: config.network,
+        discoverable: config.config.discoverable,
+        inputSchema: config.config.inputSchema,
+        outputSchema: config.config.outputSchema,
+      })),
+    });
+  }
+
   res.send("x402 Price API is running");
 });
 
