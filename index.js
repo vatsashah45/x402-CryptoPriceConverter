@@ -1,6 +1,8 @@
 import express from "express";
 import axios from "axios";
-import { paymentMiddleware } from "x402-express";
+import { paymentMiddleware, x402ResourceServer } from "@x402/express";
+import { HTTPFacilitatorClient } from "@x402/core/server";
+import { ExactEvmScheme } from "@x402/evm/exact/server";
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -13,93 +15,41 @@ if (!payToAddress) {
   throw new Error("PAY_TO_ADDRESS not set in .env file");
 }
 
+const facilitatorClient = new HTTPFacilitatorClient({ url: "https://x402.org/facilitator" });
+const resourceServer = new x402ResourceServer(facilitatorClient)
+  .register("eip155:8453", new ExactEvmScheme());
+
 const routesConfig = {
-  "/api/crypto": {
-    price: "$0.001",
-    network: "base",
-    config: {
-      discoverable: true,
-      description: "Get real-time crypto prices (BTC, ETH, etc.)",
-      inputSchema: {
-        queryParams: {
-          symbol: {
-            type: "string",
-            description: "Crypto symbol (e.g. BTC, ETH, SOL)",
-            required: true,
-          },
-          currency: {
-            type: "string",
-            description: "Fiat currency (default: USD)",
-            required: false,
-          },
-        },
-      },
-      outputSchema: {
-        type: "object",
-        properties: {
-          symbol: { type: "string" },
-          currency: { type: "string" },
-          price: { type: "number" },
-          timestamp: { type: "string" },
-        },
-      },
+  "GET /api/crypto": {
+    accepts: {
+      scheme: "exact",
+      price: "$0.001",
+      network: "eip155:8453",
+      payTo: payToAddress,
     },
+    description: "Get real-time crypto prices (BTC, ETH, etc.)",
   },
-  "/api/stock": {
-    price: "$0.005",
-    network: "base",
-    config: {
-      discoverable: true,
-      description: "Get real-time US stock prices (AAPL, TSLA, etc.)",
-      inputSchema: {
-        queryParams: {
-          symbol: {
-            type: "string",
-            description: "Stock ticker symbol (e.g. AAPL, TSLA)",
-            required: true,
-          },
-        },
-      },
-      outputSchema: {
-        type: "object",
-        properties: {
-          symbol: { type: "string" },
-          price: { type: "number" },
-          currency: { type: "string" },
-          timestamp: { type: "string" },
-        },
-      },
+  "GET /api/stock": {
+    accepts: {
+      scheme: "exact",
+      price: "$0.005",
+      network: "eip155:8453",
+      payTo: payToAddress,
     },
+    description: "Get real-time US stock prices (AAPL, TSLA, etc.)",
   },
-  "/api/sentiment": {
-    price: "$0.003",
-    network: "base",
-    config: {
-      discoverable: true,
-      description: "Get the daily Bitcoin Fear & Greed Index (sentiment score)",
-      inputSchema: {
-        queryParams: {
-          symbol: {
-            type: "string",
-            description: "Crypto symbol (only BTC supported currently)",
-            required: false,
-          },
-        },
-      },
-      outputSchema: {
-        type: "object",
-        properties: {
-          symbol: { type: "string" },
-          score: { type: "number" },
-          classification: { type: "string" },
-          timestamp: { type: "string" },
-        },
-      },
+  "GET /api/sentiment": {
+    accepts: {
+      scheme: "exact",
+      price: "$0.003",
+      network: "eip155:8453",
+      payTo: payToAddress,
     },
+    description: "Get the daily Bitcoin Fear & Greed Index (sentiment score)",
   },
 };
 
-app.use(paymentMiddleware(payToAddress, routesConfig));
+app.use(paymentMiddleware(routesConfig, resourceServer));
 
 app.get("/api/crypto", async (req, res) => {
   try {
@@ -168,15 +118,11 @@ app.get("/api/sentiment", async (req, res) => {
 app.get("/", (req, res) => {
   if (req.headers.accept === "application/x402+json") {
     return res.json({
-      x402Version: 1,
-      resources: Object.entries(routesConfig).map(([path, config]) => ({
-        path,
-        description: config.config.description,
-        price: config.price,
-        network: config.network,
-        discoverable: config.config.discoverable,
-        inputSchema: config.config.inputSchema,
-        outputSchema: config.config.outputSchema,
+      x402Version: 2,
+      resources: Object.entries(routesConfig).map(([key, config]) => ({
+        path: key.includes(" ") ? key.split(" ")[1] : key,
+        description: config.description,
+        accepts: config.accepts,
       })),
     });
   }

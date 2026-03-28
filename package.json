@@ -8,10 +8,11 @@
     "start": "node index.js"
   },
   "dependencies": {
-    "@coinbase/x402": "^0.6.2",
+    "@x402/core": "^2.8.0",
+    "@x402/evm": "^2.8.0",
+    "@x402/express": "^2.8.0",
     "axios": "^1.11.0",
     "dotenv": "^17.2.2",
-    "express": "^5.1.0",
-    "x402-express": "^0.6.0"
+    "express": "^5.1.0"
   }
 }
