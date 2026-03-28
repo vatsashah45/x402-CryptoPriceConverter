@@ -1,8 +1,8 @@
 import express from "express";
 import axios from "axios";
-import { paymentMiddleware, x402ResourceServer } from "@x402/express";
-import { HTTPFacilitatorClient } from "@x402/core/server";
-import { ExactEvmScheme } from "@x402/evm/exact/server";
+import { paymentMiddleware } from "@x402/express";
+import { x402ResourceServer, HTTPFacilitatorClient } from "@x402/core/server";
+import { registerExactEvmScheme } from "@x402/evm/exact/server";
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -15,36 +15,36 @@ if (!payToAddress) {
   throw new Error("PAY_TO_ADDRESS not set in .env file");
 }
 
-const facilitatorClient = new HTTPFacilitatorClient({ url: "https://facilitator.openx402.ai" });
-const resourceServer = new x402ResourceServer(facilitatorClient)
-  .register("eip155:8453", new ExactEvmScheme());
+const facilitatorClient = new HTTPFacilitatorClient({ url: "https://api.cdp.coinbase.com/platform/v2/x402" });
+const resourceServer = new x402ResourceServer(facilitatorClient);
+registerExactEvmScheme(resourceServer);
 
 const routesConfig = {
   "GET /api/crypto": {
-    accepts: {
+    accepts: [{
       scheme: "exact",
       price: "$0.001",
       network: "eip155:8453",
       payTo: payToAddress,
-    },
+    }],
     description: "Get real-time crypto prices (BTC, ETH, etc.)",
   },
   "GET /api/stock": {
-    accepts: {
+    accepts: [{
       scheme: "exact",
       price: "$0.005",
       network: "eip155:8453",
       payTo: payToAddress,
-    },
+    }],
     description: "Get real-time US stock prices (AAPL, TSLA, etc.)",
   },
   "GET /api/sentiment": {
-    accepts: {
+    accepts: [{
       scheme: "exact",
       price: "$0.003",
       network: "eip155:8453",
       payTo: payToAddress,
-    },
+    }],
     description: "Get the daily Bitcoin Fear & Greed Index (sentiment score)",
   },
 };
