@@ -5,8 +5,8 @@ APIs are **discoverable in x402 Bazaar** for AI agents and developers.
 
 ---
 
-- x402 Paywall → Every request is protected by Coinbase’s x402-express middleware.
-- Discoverable → APIs are automatically listed in x402 Bazaar (discoverable: true).
+- x402 v2 Paywall → Every request is protected by Coinbase's `@x402/express` v2 middleware.
+- CAIP-2 Networks → Uses standardized CAIP-2 network identifiers (e.g. `eip155:8453` for Base mainnet).
 - Pay-per-call model → Agents or devs can pay small amounts in USDC to use the endpoints.
 
 --- 
