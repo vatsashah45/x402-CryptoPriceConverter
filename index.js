@@ -15,7 +15,7 @@ if (!payToAddress) {
   throw new Error("PAY_TO_ADDRESS not set in .env file");
 }
 
-const facilitatorClient = new HTTPFacilitatorClient({ url: "https://x402.org/facilitator" });
+const facilitatorClient = new HTTPFacilitatorClient({ url: "https://facilitator.openx402.ai" });
 const resourceServer = new x402ResourceServer(facilitatorClient)
   .register("eip155:8453", new ExactEvmScheme());
 
