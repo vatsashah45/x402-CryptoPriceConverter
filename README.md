@@ -46,18 +46,18 @@ Fetch the current price of a cryptocurrency in any fiat currency.
 
 | Parameter | Required | Default | Description |
 |---|---|---|---|
-| `symbol` | No | `BTC` | Cryptocurrency ID (e.g. `bitcoin`, `ethereum`) |
+| `symbol` | No | `bitcoin` | CoinGecko coin ID (e.g. `bitcoin`, `ethereum`) |
 | `currency` | No | `USD` | Fiat currency code (e.g. `USD`, `EUR`) |
 
 **Example**
 
 ```
-GET /api/crypto?symbol=BTC&currency=USD
+GET /api/crypto?symbol=bitcoin&currency=USD
 ```
 
 ```json
 {
-  "symbol": "BTC",
+  "symbol": "BITCOIN",
   "currency": "USD",
   "price": 65432.10,
   "timestamp": "2025-09-14T12:00:00Z"
@@ -115,5 +115,41 @@ GET /api/sentiment?symbol=BTC
   "score": 67,
   "classification": "Greed",
   "timestamp": "2025-09-14T12:00:00Z"
+}
+```
+
+---
+
+### `GET /` — Discovery endpoint (free)
+
+Returns the list of available endpoints with their pricing and network details. Responds to the `Accept: application/x402+json` header.
+
+**Example**
+
+```
+GET /
+Accept: application/x402+json
+```
+
+```json
+{
+  "x402Version": 2,
+  "resources": [
+    {
+      "path": "/api/crypto",
+      "description": "Get real-time crypto prices (BTC, ETH, etc.)",
+      "accepts": { "scheme": "exact", "price": "$0.001", "network": "eip155:8453", "payTo": "0x..." }
+    },
+    {
+      "path": "/api/stock",
+      "description": "Get real-time US stock prices (AAPL, TSLA, etc.)",
+      "accepts": { "scheme": "exact", "price": "$0.005", "network": "eip155:8453", "payTo": "0x..." }
+    },
+    {
+      "path": "/api/sentiment",
+      "description": "Get the daily Bitcoin Fear & Greed Index (sentiment score)",
+      "accepts": { "scheme": "exact", "price": "$0.003", "network": "eip155:8453", "payTo": "0x..." }
+    }
+  ]
 }
 ```
