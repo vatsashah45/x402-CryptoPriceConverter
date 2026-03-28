@@ -53,7 +53,7 @@ app.use(paymentMiddleware(routesConfig, resourceServer));
 
 app.get("/api/crypto", async (req, res) => {
   try {
-    const { symbol = "BTC", currency = "USD" } = req.query;
+    const { symbol = "bitcoin", currency = "USD" } = req.query;
     const resp = await axios.get(
       `https://api.coingecko.com/api/v3/simple/price?ids=${symbol.toLowerCase()}&vs_currencies=${currency.toLowerCase()}`
     );
