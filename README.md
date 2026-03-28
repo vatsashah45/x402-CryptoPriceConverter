@@ -25,6 +25,12 @@ Create a `.env` file in the project root:
 
 ```env
 PAY_TO_ADDRESS=0xYourWalletAddressHere
+
+# Testnet (default if not set)
+FACILITATOR_URL=https://x402.org/facilitator
+
+# Mainnet
+# FACILITATOR_URL=https://api.cdp.coinbase.com/platform/v2/x402
 ```
 
 ### Run

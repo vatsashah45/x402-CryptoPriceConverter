@@ -15,7 +15,16 @@ if (!payToAddress) {
   throw new Error("PAY_TO_ADDRESS not set in .env file");
 }
 
-const facilitatorClient = new HTTPFacilitatorClient({ url: "https://api.cdp.coinbase.com/platform/v2/x402" });
+const facilitatorUrl =
+  process.env.FACILITATOR_URL || "https://x402.org/facilitator";
+
+if (!process.env.FACILITATOR_URL) {
+  console.warn(
+    "FACILITATOR_URL not set in .env — defaulting to https://x402.org/facilitator (testnet)"
+  );
+}
+
+const facilitatorClient = new HTTPFacilitatorClient({ url: facilitatorUrl });
 const resourceServer = new x402ResourceServer(facilitatorClient);
 registerExactEvmScheme(resourceServer);
 
